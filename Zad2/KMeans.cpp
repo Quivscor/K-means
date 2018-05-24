@@ -37,7 +37,7 @@ KMeans::KMeans(int initMode, int groups, vector<vector<double>> &dataSet) : grou
 		int i = 0;
 		shuffle(begin(id), end(id), rng);
 
-		for (vector<double> points : dataSet)
+		for (vector<double> &points : dataSet)
 		{
 			points[2] = id[i];
 			i++;
@@ -54,9 +54,9 @@ KMeans::KMeans(int initMode, int groups, vector<vector<double>> &dataSet) : grou
 			double sumY = 0;
 			vector<double> temp;
 			double count = 0;
-			for (vector<double> point : dataSet)
+			for (vector<double> &point : dataSet)
 			{
-				if (point[2] == i)
+				if ((int)point[2] == i)
 				{
 					sumX += point[0];
 					sumY += point[1];
