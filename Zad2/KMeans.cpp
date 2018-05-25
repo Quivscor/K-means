@@ -5,6 +5,7 @@
 #include <random>
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 
 KMeans::KMeans(int initMode, int groups, vector<vector<double>> &dataSet) : groups(groups)
 {
@@ -23,7 +24,7 @@ KMeans::KMeans(int initMode, int groups, vector<vector<double>> &dataSet) : grou
 		for (int i = 0; i < groups; i++)
 		{
 			select = rand() % 1000;
-			centroids.push_back(dataSet[select]);
+			this->centroids.push_back(dataSet[select]);
 		}
 		break;
 	case 1:
@@ -35,16 +36,17 @@ KMeans::KMeans(int initMode, int groups, vector<vector<double>> &dataSet) : grou
 			id.push_back(i);
 
 		int i = 0;
-		shuffle(begin(id), end(id), rng);
+		//shuffle(begin(id), end(id), rng);
 
 		for (vector<double> &points : dataSet)
 		{
+			//i = rand() % groups;
 			points[2] = id[i];
 			i++;
 			if (i == groups)
 			{
 				i = 0;
-				shuffle(begin(id), end(id), rng);
+				//shuffle(begin(id), end(id), rng);
 			}
 		}
 
@@ -66,7 +68,7 @@ KMeans::KMeans(int initMode, int groups, vector<vector<double>> &dataSet) : grou
 			temp.push_back(sumX / count);
 			temp.push_back(sumY / count);
 
-			centroids.push_back(temp);
+			this->centroids.push_back(temp);
 		}
 		break;
 	}
@@ -85,21 +87,22 @@ void KMeans::Recalculate(vector<vector<double>> &dataSet)
 {
 	int i = 0;
 	vector<vector<double>> compare;
-	for (i = 0; i < groups; i++)
+	
+	for (int j = 0; j < dataSet.size(); j++)
 	{
 		vector<double> distances;
 
 		//Loop through all points per centroid and assign group
-		for (vector<double> point : dataSet)
+		for (i = 0; i < groups; i++)
 		{
-			distances.push_back(distance(point[0], point[1], centroids[i][0], centroids[i][1]));
+			distances.push_back(distance(dataSet[j][0], dataSet[j][1], centroids[i][0], centroids[i][1]));
 		}
 		compare.push_back(distances);
 	}
 
 	i = 0;
 	//Compare distances
-	for (int j = 0; j < compare[0].size(); j++)
+	/*for (int j = 0; j < compare[0].size(); j++)
 	{
 		int minGroup = 0;
 		double min = compare[i][0];
@@ -109,9 +112,17 @@ void KMeans::Recalculate(vector<vector<double>> &dataSet)
 			{
 				minGroup = i;
 				min = compare[i][j];
+				if (i == 3)
+					cout << "3";
 			}
 		}
 		dataSet[j][2] = (double)minGroup;
+	}*/
+
+	for (int j = 0; j < compare[0].size(); j++)
+	{
+		vector<double>::iterator result = min_element(begin(compare[j]), end(compare[j]));
+		dataSet[j][2] = std::distance(begin(compare[j]), result);
 	}
 
 	//Calculating center of mass
@@ -132,23 +143,25 @@ void KMeans::Recalculate(vector<vector<double>> &dataSet)
 		sumX = sumX / count;
 		sumY = sumY / count;
 
-		centroids[i][0] = sumX;
-		centroids[i][1] = sumY;
+		this->centroids[i][0] = sumX;
+		this->centroids[i][1] = sumY;
 	}
 }
 
 double KMeans::MSE(vector<vector<double>> dataSet)
 {
-	double sum;
+	double sum = 0;
 	for (int i = 0; i < dataSet.size(); i++)
 	{
-		double pointsum;
+		double pointsum = 0;
 		for (int j = 0; j < groups; j++)
 		{
-			
+			pointsum += distance(dataSet[i][0], dataSet[i][1], centroids[j][0], centroids[j][1]);
 		}
+		sum += pointsum;
 	}
-	return 1/ dataSet.size();
+	double result = (1 / (double)dataSet.size() * groups) * sum;
+	return result;
 }
 
 double KMeans::distance(double x1, double y1, double x2, double y2)
